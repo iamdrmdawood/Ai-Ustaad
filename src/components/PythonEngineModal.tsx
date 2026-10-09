@@ -56,13 +56,13 @@ export const PythonEngineModal: React.FC<PythonEngineModalProps> = ({ isOpen, on
   };
 
   const vectorDbPythonCode = `"""
-OmniScholar Vector Engine: Semantic Search with sentence-transformers & NumPy
+intellisnc - Ai Ustaad Vector Engine: Semantic Search with sentence-transformers & NumPy
 Requirements: pip install sentence-transformers numpy chromadb
 """
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-class OmniVectorDatabase:
+class IntellisncVectorDatabase:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         print(f"Loading embedding model: {model_name}...")
         self.model = SentenceTransformer(model_name)
@@ -102,7 +102,7 @@ class OmniVectorDatabase:
         ]`;
 
   const ocrPythonCode = `"""
-OmniScholar OCR Engine: Computer Vision Textbook Preprocessing & OCR
+intellisnc - Ai Ustaad OCR Engine: Computer Vision Textbook Preprocessing & OCR
 Requirements: pip install pytesseract opencv-python pillow
 """
 import cv2
@@ -138,7 +138,7 @@ def preprocess_book_page(image_path: str):
     }`;
 
   const schedulerPythonCode = `"""
-OmniScholar Spaced Repetition Engine: SuperMemo SM-2 Interval Calculation
+intellisnc - Ai Ustaad Spaced Repetition Engine: SuperMemo SM-2 Interval Calculation
 """
 def sm2_algorithm(repetition: int, ease_factor: float, quality: int):
     """

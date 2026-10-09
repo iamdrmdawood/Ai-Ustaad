@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
+  Artifact,
   BookChunk,
   BookDocument,
   ChatMessage,
+  ChatThread,
   Flashcard,
   QuizSession,
   StudentProgress,
@@ -64,6 +66,19 @@ interface AppContextType {
   addChatMessage: (msg: ChatMessage) => void;
   clearChatHistory: () => void;
 
+  // Claude & ChatGPT style threads & Artifacts
+  threads: ChatThread[];
+  activeThreadId: string;
+  activeThread?: ChatThread;
+  createNewThread: () => void;
+  switchThread: (id: string) => void;
+  deleteThread: (id: string) => void;
+  renameThread: (id: string, title: string) => void;
+  activeArtifact: Artifact | null;
+  setActiveArtifact: (art: Artifact | null) => void;
+  reasoningEnabled: boolean;
+  setReasoningEnabled: (val: boolean) => void;
+
   progress: StudentProgress;
   incrementStudyMinutes: (mins: number) => void;
   resetAllData: () => void;
@@ -91,14 +106,14 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<SupportedLanguage>(() => {
-    const saved = localStorage.getItem('omni_lang');
+    const saved = localStorage.getItem('intellisnc_lang');
     return (saved as SupportedLanguage) || 'en';
   });
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
   const [books, setBooks] = useState<BookDocument[]>(() => {
-    const saved = localStorage.getItem('omni_books');
+    const saved = localStorage.getItem('intellisnc_books');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -114,7 +129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [studyNotes, setStudyNotes] = useState<StudyNotes[]>(() => {
-    const saved = localStorage.getItem('omni_notes');
+    const saved = localStorage.getItem('intellisnc_notes');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -130,7 +145,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [quizzes, setQuizzes] = useState<QuizSession[]>(() => {
-    const saved = localStorage.getItem('omni_quizzes');
+    const saved = localStorage.getItem('intellisnc_quizzes');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -144,7 +159,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeQuiz, setActiveQuiz] = useState<QuizSession | null>(null);
 
   const [schedule, setSchedule] = useState<StudySchedule>(() => {
-    const saved = localStorage.getItem('omni_schedule');
+    const saved = localStorage.getItem('intellisnc_schedule');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -156,10 +171,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    const saved = localStorage.getItem('omni_chat');
+    const saved = localStorage.getItem('intellisnc_chat');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const cleaned = saved.replace(/omnischolar/gi, 'Intellisnc').replace(/omni/gi, 'Intellisnc');
+        return JSON.parse(cleaned);
       } catch {
         return [];
       }
@@ -169,14 +185,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         id: 'msg-welcome',
         role: 'model',
         content:
-          '👋 Hello! I am your **OmniScholar AI Tutor**. I am directly connected to your uploaded books and vector database.\n\nAsk me any concept, request a step-by-step math derivation, or test your understanding with practice prompts in any language!',
+          '👋 Hello! I am your **Intellisnc Ai**. I am directly connected to your uploaded books and vector database.\n\nAsk me any concept, request a step-by-step math derivation, or test your understanding with practice prompts in any language!',
         timestamp: new Date().toISOString(),
       },
     ];
   });
 
+  const [threads, setThreads] = useState<ChatThread[]>(() => {
+    const saved = localStorage.getItem('intellisnc_threads');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return [
+      {
+        id: 'thread-default',
+        title: 'Academic Q&A & Research',
+        messages: [
+          {
+            id: 'msg-welcome',
+            role: 'model',
+            content:
+              '👋 Hello! I am your **Intellisnc Ai**. I am directly connected to your uploaded books and vector database.\n\nAsk me any concept, request a step-by-step math derivation, or test your understanding with practice prompts in any language!',
+            timestamp: new Date().toISOString(),
+          },
+        ],
+        activeArtifact: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        model: 'gemini-3.8-flash',
+        reasoningEnabled: true,
+      },
+    ];
+  });
+
+  const [activeThreadId, setActiveThreadId] = useState<string>(() => {
+    return threads[0]?.id || 'thread-default';
+  });
+
+  const [activeArtifact, setActiveArtifact] = useState<Artifact | null>(null);
+  const [reasoningEnabled, setReasoningEnabled] = useState<boolean>(true);
+
   const [progress, setProgress] = useState<StudentProgress>(() => {
-    const saved = localStorage.getItem('omni_progress');
+    const saved = localStorage.getItem('intellisnc_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -189,31 +241,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Local storage persistence
   useEffect(() => {
-    localStorage.setItem('omni_lang', language);
+    localStorage.setItem('intellisnc_lang', language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem('omni_books', JSON.stringify(books));
+    localStorage.setItem('intellisnc_books', JSON.stringify(books));
   }, [books]);
 
   useEffect(() => {
-    localStorage.setItem('omni_notes', JSON.stringify(studyNotes));
+    localStorage.setItem('intellisnc_notes', JSON.stringify(studyNotes));
   }, [studyNotes]);
 
   useEffect(() => {
-    localStorage.setItem('omni_quizzes', JSON.stringify(quizzes));
+    localStorage.setItem('intellisnc_quizzes', JSON.stringify(quizzes));
   }, [quizzes]);
 
   useEffect(() => {
-    localStorage.setItem('omni_schedule', JSON.stringify(schedule));
+    localStorage.setItem('intellisnc_schedule', JSON.stringify(schedule));
   }, [schedule]);
 
   useEffect(() => {
-    localStorage.setItem('omni_chat', JSON.stringify(chatMessages));
+    localStorage.setItem('intellisnc_chat', JSON.stringify(chatMessages));
   }, [chatMessages]);
 
   useEffect(() => {
-    localStorage.setItem('omni_progress', JSON.stringify(progress));
+    localStorage.setItem('intellisnc_threads', JSON.stringify(threads));
+  }, [threads]);
+
+  useEffect(() => {
+    localStorage.setItem('intellisnc_progress', JSON.stringify(progress));
   }, [progress]);
 
   const setLanguage = (lang: SupportedLanguage) => {
@@ -362,19 +418,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const activeThread = threads.find((t) => t.id === activeThreadId) || threads[0];
+
+  const createNewThread = () => {
+    const newThread: ChatThread = {
+      id: `thread-${Date.now()}`,
+      title: 'New Study Conversation',
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          role: 'model',
+          content:
+            '👋 Hello! I am your **Intellisnc Ai**. What topic, book chapter, or academic problem would you like to explore today?',
+          timestamp: new Date().toISOString(),
+        },
+      ],
+      activeArtifact: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      model: 'gemini-3.8-flash',
+      reasoningEnabled: true,
+    };
+    setThreads((prev) => [newThread, ...prev]);
+    setActiveThreadId(newThread.id);
+    setChatMessages(newThread.messages);
+    setActiveArtifact(null);
+  };
+
+  const switchThread = (id: string) => {
+    const thread = threads.find((t) => t.id === id);
+    if (thread) {
+      setActiveThreadId(thread.id);
+      setChatMessages(thread.messages);
+      setActiveArtifact(thread.activeArtifact || null);
+    }
+  };
+
+  const deleteThread = (id: string) => {
+    if (threads.length <= 1) {
+      createNewThread();
+      return;
+    }
+    const remaining = threads.filter((t) => t.id !== id);
+    setThreads(remaining);
+    if (activeThreadId === id) {
+      setActiveThreadId(remaining[0].id);
+      setChatMessages(remaining[0].messages);
+      setActiveArtifact(remaining[0].activeArtifact || null);
+    }
+  };
+
+  const renameThread = (id: string, title: string) => {
+    setThreads((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, title, updatedAt: new Date().toISOString() } : t))
+    );
+  };
+
   const addChatMessage = (msg: ChatMessage) => {
     setChatMessages((prev) => [...prev, msg]);
+    // Also update thread in threads list
+    setThreads((prev) =>
+      prev.map((t) => {
+        if (t.id === activeThreadId) {
+          const updatedMessages = [...t.messages, msg];
+          let updatedTitle = t.title;
+          if (t.messages.length <= 1 && msg.role === 'user') {
+            updatedTitle = msg.content.slice(0, 36) + (msg.content.length > 36 ? '...' : '');
+          }
+          return {
+            ...t,
+            title: updatedTitle,
+            messages: updatedMessages,
+            activeArtifact: msg.artifact || t.activeArtifact,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return t;
+      })
+    );
+    if (msg.artifact) {
+      setActiveArtifact(msg.artifact);
+    }
   };
 
   const clearChatHistory = () => {
-    setChatMessages([
-      {
-        id: 'msg-welcome-new',
-        role: 'model',
-        content: 'Chat history cleared. What topic or textbook page would you like to explore?',
-        timestamp: new Date().toISOString(),
-      },
-    ]);
+    const resetMsg: ChatMessage = {
+      id: 'msg-welcome-new',
+      role: 'model',
+      content: 'Chat cleared. What concept from your books would you like to explore?',
+      timestamp: new Date().toISOString(),
+    };
+    setChatMessages([resetMsg]);
+    setThreads((prev) =>
+      prev.map((t) => (t.id === activeThreadId ? { ...t, messages: [resetMsg], activeArtifact: null } : t))
+    );
+    setActiveArtifact(null);
   };
 
   const incrementStudyMinutes = (mins: number) => {
@@ -432,6 +570,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         chatMessages,
         addChatMessage,
         clearChatHistory,
+
+        threads,
+        activeThreadId,
+        activeThread,
+        createNewThread,
+        switchThread,
+        deleteThread,
+        renameThread,
+        activeArtifact,
+        setActiveArtifact,
+        reasoningEnabled,
+        setReasoningEnabled,
 
         progress,
         incrementStudyMinutes,

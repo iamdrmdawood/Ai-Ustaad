@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Menu,
   X,
+  Info,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     setActiveBookId,
     allChunks,
     resetAllData,
+    setActiveTab,
   } = useApp();
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
@@ -56,14 +58,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="flex items-center gap-2.5 cursor-pointer">
+          <div
+            onClick={() => setActiveTab('dashboard')}
+            className="flex items-center gap-2.5 cursor-pointer"
+          >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-white font-mono">
-                  Intellisnc <span className="text-indigo-400">AI-Ustaad</span>
+                  intellisnc <span className="text-indigo-400">- Ai Ustaad</span>
                 </span>
                 <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded">
                   AI + OCR
@@ -127,6 +132,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Code2 className="w-3.5 h-3.5 text-sky-400" />
             <span className="hidden sm:inline">Python AI</span>
+          </button>
+
+          {/* About & Founder Button */}
+          <button
+            onClick={() => setActiveTab('about')}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700/60 transition"
+            title="About intellisnc & Founder Dr Muhammad Dawood"
+          >
+            <Info className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">About</span>
           </button>
 
           {/* Multi-language Selector */}

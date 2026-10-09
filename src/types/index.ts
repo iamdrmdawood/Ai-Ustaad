@@ -143,16 +143,41 @@ export interface StudySchedule {
   createdAt: string;
 }
 
+export interface Artifact {
+  id: string;
+  type: 'document' | 'code' | 'quiz' | 'flashcards' | 'markdown';
+  title: string;
+  content: string;
+  language?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'model';
   content: string;
   timestamp: string;
+  thoughtProcess?: string; // Extended thinking / reasoning trace
+  artifact?: Artifact;
+  imageAttachment?: string;
   citations?: Array<{
     title: string;
     page: number;
     snippet: string;
+    similarityScore?: number;
   }>;
+}
+
+export interface ChatThread {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  activeArtifact?: Artifact | null;
+  createdAt: string;
+  updatedAt: string;
+  model: string;
+  reasoningEnabled?: boolean;
 }
 
 export interface StudentProgress {

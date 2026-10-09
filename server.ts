@@ -433,7 +433,7 @@ Return STRICT valid JSON format matching:
   }
 });
 
-// 6. Real-time Clarification & AI Tutor Chat
+// 6. Real-time Clarification & AI Tutor Chat (Claude / ChatGPT style with Canvas & Artifacts)
 app.post('/api/chat-clarify', async (req: Request, res: Response) => {
   try {
     const {
@@ -441,6 +441,8 @@ app.post('/api/chat-clarify', async (req: Request, res: Response) => {
       contextDocuments = [],
       language = 'English',
       studentLevel = 'University / High School',
+      reasoningEnabled = true,
+      imageAttachment,
     } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -458,28 +460,48 @@ app.post('/api/chat-clarify', async (req: Request, res: Response) => {
       )
       .join('\n\n');
 
-    const systemInstruction = `You are "OmniScholar Tutor", a patient, highly knowledgeable AI academic tutor.
-Your mission is to clarify difficult concepts, solve step-by-step problems, and test understanding using the student's book notes and vector-retrieved book chunks.
+    const systemInstruction = `You are "Intellisnc Ai", a state-of-the-art AI academic engine combining the conversational mastery of Claude and ChatGPT with deep academic rigor and textbook vector search.
 
-Current Student Settings:
+Student Parameters:
 - Language: ${language} (Always respond in ${language} unless explicitly requested otherwise)
 - Academic Level: ${studentLevel}
 
-Grounding Guidelines:
-- Base your answers primarily on the provided source book documents when available.
-- When referencing a fact or definition from the book context, cite it nicely (e.g. "[Book Ref: Page X]").
-- Use clear markdown formatting, bold keywords, and LaTeX ($E=mc^2$) for formulas.
-- Provide a brief intuitive explanation followed by a concrete real-world example.
-- End with an engaging check-for-understanding question or study tip.
+Core Capabilities & Guidelines:
+1. Grounding: Ground answers in the provided book chunks when available, citing pages (e.g., "[Page 42]").
+2. Reasoning & Thinking:
+   ${reasoningEnabled ? 'Always start your response with a concise <thinking>...</thinking> section where you break down the question, outline the mathematical or conceptual steps, and verify key formulas before explaining.' : ''}
+3. Artifacts & Canvas:
+   When creating comprehensive study notes, runnable code (Python/JS/HTML), interactive quizzes, or cheat-sheets, encapsulate that content in a self-contained <artifact type="document|code|quiz|flashcards" title="Descriptive Title">...</artifact> tag!
+   - type="document": for structured study notes, Cornell summaries, or essays.
+   - type="code": for runnable Python, NumPy, algorithms, or formulas.
+   - type="quiz": for practice questions with options and explanations.
+   - type="flashcards": for concept:definition recall pairs.
+   Keep conversational greetings and explanations outside the artifact.
+4. Rich Formatting: Use LaTeX ($E=mc^2$ or $$\\int_a^b f(x)dx$$) for mathematics and physics equations. Bold keywords and use clean Markdown.
+5. Tone: Warm, intellectually stimulating, encouraging, clear, and pedagogically brilliant.
 
 Retrieved Context from Student's Books:
 ${contextSnippets ? contextSnippets : 'No specific book page pinned; answer with universal academic rigor.'}`;
 
-    // Format chat history
-    const geminiContents = messages.map((m: any) => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }],
-    }));
+    // Format chat history with optional multimodal image support
+    const geminiContents = messages.map((m: any, idx: number) => {
+      const parts: any[] = [{ text: m.content }];
+      // If last user message contains an image attachment
+      if (idx === messages.length - 1 && m.role === 'user' && (m.imageAttachment || imageAttachment)) {
+        const rawImg = m.imageAttachment || imageAttachment;
+        const cleanBase64 = rawImg.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
+        parts.unshift({
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: cleanBase64,
+          },
+        });
+      }
+      return {
+        role: m.role === 'user' ? 'user' : 'model',
+        parts,
+      };
+    });
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -489,8 +511,40 @@ ${contextSnippets ? contextSnippets : 'No specific book page pinned; answer with
       },
     });
 
-    const reply = response.text || 'I am ready to clarify any concept from your books!';
-    return res.json({ success: true, reply });
+    const rawReply = response.text || 'I am ready to clarify any concept from your books!';
+
+    // Extract <thinking> trace if present
+    let thoughtProcess: string | undefined;
+    let cleanReply = rawReply;
+    const thinkingMatch = rawReply.match(/<thinking>([\s\S]*?)<\/thinking>/i);
+    if (thinkingMatch) {
+      thoughtProcess = thinkingMatch[1].trim();
+      cleanReply = cleanReply.replace(/<thinking>[\s\S]*?<\/thinking>/i, '').trim();
+    }
+
+    // Extract <artifact> if present
+    let artifact: any | undefined;
+    const artifactMatch = cleanReply.match(/<artifact\s+type="([^"]+)"\s+title="([^"]+)">([\s\S]*?)<\/artifact>/i);
+    if (artifactMatch) {
+      artifact = {
+        id: `art-${Date.now()}`,
+        type: artifactMatch[1],
+        title: artifactMatch[2],
+        content: artifactMatch[3].trim(),
+        createdAt: new Date().toISOString(),
+      };
+      cleanReply = cleanReply.replace(/<artifact[\s\S]*?<\/artifact>/i, '').trim();
+      if (!cleanReply) {
+        cleanReply = `I've created the **${artifact.title}** artifact for you in the Canvas panel!`;
+      }
+    }
+
+    return res.json({
+      success: true,
+      reply: cleanReply,
+      thoughtProcess,
+      artifact,
+    });
   } catch (error: any) {
     console.error('Chat error:', error);
     return res.status(500).json({ error: error.message || 'Chat tutor error' });
@@ -723,7 +777,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Intellisnc AI-Ustaad Server running on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 intellisnc - Ai Ustaad Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

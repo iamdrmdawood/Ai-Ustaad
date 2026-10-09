@@ -52,10 +52,10 @@ export const DashboardView: React.FC = () => {
         <div className="relative z-10 max-w-2xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
             <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
-            <span>AI Student Study Hub & Vector Engine</span>
+            <span>Intellisnc Study Hub & Vector Engine</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Accelerate your learning from textbooks & notes.
+            Accelerate your learning with Intellisnc Ai.
           </h1>
           <p className="text-sm text-slate-300 leading-relaxed">
             Extract textbook pages with OCR, search book chapters using high-dimensional vector embeddings, master concepts with adaptive quizzes, and clarify difficult problems with your 24/7 multilingual AI tutor.

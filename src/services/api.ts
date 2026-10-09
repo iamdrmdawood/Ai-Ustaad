@@ -1,4 +1,4 @@
-import { BookChunk, KeyConcept, QuizSession, StudyNotes, StudySchedule } from '../types';
+import { Artifact, BookChunk, KeyConcept, QuizSession, StudyNotes, StudySchedule } from '../types';
 
 export interface OcrResult {
   extractedText: string;
@@ -14,6 +14,12 @@ export interface SemanticSearchResult {
   query: string;
   results: Array<BookChunk & { similarityScore: number }>;
   totalIndexedChunks: number;
+}
+
+export interface TutorClarifyResponse {
+  reply: string;
+  thoughtProcess?: string;
+  artifact?: Artifact;
 }
 
 export async function runOcrExtraction(
@@ -125,11 +131,13 @@ export async function generateAdaptiveQuiz(
 }
 
 export async function sendTutorClarification(
-  messages: Array<{ role: 'user' | 'model'; content: string }>,
+  messages: Array<{ role: 'user' | 'model'; content: string; imageAttachment?: string }>,
   contextDocuments: Array<{ title: string; page: number; text: string }>,
   language: string = 'English',
-  studentLevel: string = 'University / College'
-): Promise<string> {
+  studentLevel: string = 'University / College',
+  reasoningEnabled: boolean = true,
+  imageAttachment?: string
+): Promise<TutorClarifyResponse> {
   const res = await fetch('/api/chat-clarify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -138,6 +146,8 @@ export async function sendTutorClarification(
       contextDocuments,
       language,
       studentLevel,
+      reasoningEnabled,
+      imageAttachment,
     }),
   });
 
@@ -147,7 +157,11 @@ export async function sendTutorClarification(
   }
 
   const json = await res.json();
-  return json.reply;
+  return {
+    reply: json.reply || '',
+    thoughtProcess: json.thoughtProcess,
+    artifact: json.artifact,
+  };
 }
 
 export async function generateStudySchedule(

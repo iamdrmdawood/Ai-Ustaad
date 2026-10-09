@@ -15,9 +15,10 @@ import { NotesStudioView } from './components/NotesStudioView';
 import { QuizStudioView } from './components/QuizStudioView';
 import { ScheduleView } from './components/ScheduleView';
 import { ChatTutorView } from './components/ChatTutorView';
+import { AboutView } from './components/AboutView';
 import { PomodoroModal } from './components/PomodoroModal';
 import { PythonEngineModal } from './components/PythonEngineModal';
-import { X, Code2, ScanText, LayoutDashboard, Database, FileText, HelpCircle, CalendarDays, MessageSquareQuote } from 'lucide-react';
+import { X, Code2, ScanText, LayoutDashboard, Database, FileText, HelpCircle, CalendarDays, MessageSquareQuote, Info } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { activeTab, setActiveTab, t } = useApp();
@@ -41,7 +42,7 @@ const MainLayout: React.FC = () => {
         <div className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-6 animate-fade-in">
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <span className="font-extrabold text-base text-white font-mono">
-              Intellisnc <span className="text-indigo-400">AI-Ustaad</span> Menu
+              intellisnc <span className="text-indigo-400">- Ai Ustaad</span> Menu
             </span>
             <button
               onClick={() => setMobileMenuOpen(false)}
@@ -60,6 +61,7 @@ const MainLayout: React.FC = () => {
               { id: 'quizzes', label: t('quizzes'), icon: HelpCircle },
               { id: 'schedule', label: t('schedule'), icon: CalendarDays },
               { id: 'tutor', label: t('aiTutor'), icon: MessageSquareQuote },
+              { id: 'about', label: t('about'), icon: Info },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -110,6 +112,7 @@ const MainLayout: React.FC = () => {
           {activeTab === 'quizzes' && <QuizStudioView />}
           {activeTab === 'schedule' && <ScheduleView onOpenPomodoro={() => setPomodoroOpen(true)} />}
           {activeTab === 'tutor' && <ChatTutorView />}
+          {activeTab === 'about' && <AboutView />}
         </main>
       </div>
 

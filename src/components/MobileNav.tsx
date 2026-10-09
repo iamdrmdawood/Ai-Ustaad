@@ -8,6 +8,7 @@ import {
   HelpCircle,
   MessageSquareQuote,
   CalendarDays,
+  Info,
 } from 'lucide-react';
 
 export const MobileNav: React.FC = () => {
@@ -19,8 +20,8 @@ export const MobileNav: React.FC = () => {
     { id: 'vector', label: 'Vector', icon: Database },
     { id: 'notes', label: 'Notes', icon: FileText },
     { id: 'quizzes', label: 'Quiz', icon: HelpCircle },
-    { id: 'schedule', label: 'Plan', icon: CalendarDays },
     { id: 'tutor', label: 'Tutor', icon: MessageSquareQuote },
+    { id: 'about', label: 'About', icon: Info },
   ];
 
   return (

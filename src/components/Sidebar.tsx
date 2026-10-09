@@ -11,6 +11,7 @@ import {
   Code2,
   Sparkles,
   BookMarked,
+  Info,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -63,6 +64,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenPythonEngine }) => {
       icon: MessageSquareQuote,
       badge: 'Live',
       badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+    },
+    {
+      id: 'about',
+      label: t('about'),
+      icon: Info,
+      badge: 'CEO',
+      badgeColor: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
     },
   ];
 
