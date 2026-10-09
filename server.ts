@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -10,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Set payload limit for book images and document scans
 app.use(express.json({ limit: '30mb' }));
@@ -722,7 +723,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 OmniScholar AI Server running on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 Intellisnc AI-Ustaad Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

@@ -41,7 +41,7 @@ const MainLayout: React.FC = () => {
         <div className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-6 animate-fade-in">
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <span className="font-extrabold text-base text-white font-mono">
-              Omni<span className="text-indigo-400">Scholar</span> Menu
+              Intellisnc <span className="text-indigo-400">AI-Ustaad</span> Menu
             </span>
             <button
               onClick={() => setMobileMenuOpen(false)}

@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-white font-mono">
-                  Omni<span className="text-indigo-400">Scholar</span>
+                  Intellisnc <span className="text-indigo-400">AI-Ustaad</span>
                 </span>
                 <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded">
                   AI + OCR
